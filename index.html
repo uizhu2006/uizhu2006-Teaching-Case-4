@@ -523,22 +523,22 @@
             // Simplified logic for brevity, expands on React version
             let content = '';
             
-            // Common Header
-            const header = `
+            // Common Header Helper
+            const headerSimple = (title, subtitle) => `
                 <div class="px-6 flex justify-between items-center mt-2">
                     <div>
-                        <p class="text-xs font-medium mb-0.5" style="color: ${colors.textMuted}">Welcome</p>
-                        <h2 class="text-2xl font-bold tracking-tight" style="color: ${colors.textMain}">Overview</h2>
+                        <p class="text-xs font-medium mb-0.5" style="color: ${colors.textMuted}">${subtitle}</p>
+                        <h2 class="text-2xl font-bold tracking-tight" style="color: ${colors.textMain}">${title}</h2>
                     </div>
                     <div class="w-11 h-11 rounded-full border p-0.5 shadow-sm overflow-hidden" style="border-color: ${colors.border}">
-                        <div class="w-full h-full bg-gray-200"></div>
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-400">IMG</div>
                     </div>
-                </div>
-            `;
+                </div>`;
 
+            // --- CASE 1: FINTECH (Wallet Style) ---
             if (['fintech'].includes(currentIndustry)) {
                 content = `
-                    ${header}
+                    ${headerSimple('Total Balance', 'My Wallet')}
                     <div class="px-6">
                         <div class="w-full aspect-[1.6] rounded-[24px] p-6 relative overflow-hidden shadow-2xl flex flex-col justify-between"
                              style="background: linear-gradient(135deg, ${colors.primary}, ${colors.secondary})">
@@ -547,55 +547,344 @@
                                 <span class="font-mono tracking-widest text-xs opacity-80">**** 4829</span>
                                 <h3 class="text-3xl font-bold mt-4">$24,562.00</h3>
                             </div>
+                            <div class="z-10 flex justify-between text-white/80 text-xs">
+                                <span>Alex Designer</span>
+                                <span>12/25</span>
+                            </div>
                         </div>
+                    </div>
+                    <div class="flex justify-between px-8 text-center">
+                        ${['Send', 'Request', 'Top-up', 'More'].map((label, i) => `
+                            <div class="flex flex-col gap-2 items-center">
+                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center border shadow-sm active:scale-95 transition-transform" 
+                                     style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                                    ${i===0 ? Icons.creditCard(20, colors.primary) : i===1 ? Icons.user(20, colors.secondary) : i===2 ? Icons.plus(20, colors.accent) : Icons.grid(20, colors.textMuted)}
+                                </div>
+                                <span class="text-[10px] font-medium" style="color: ${colors.textMuted}">${label}</span>
+                            </div>
+                        `).join('')}
                     </div>
                     <div class="px-6 pb-6">
                         <h3 class="font-bold text-lg mb-4" style="color: ${colors.textMain}">Transactions</h3>
                         <div class="space-y-3">
                             ${[1,2,3].map(i => `
-                                <div class="flex items-center gap-4 p-4 rounded-[24px] border" style="background-color: ${colors.surface}; border-color: ${colors.border}">
-                                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background-color: ${i===1 ? colors.accent+'15' : colors.surface}">
+                                <div class="flex items-center gap-4 p-4 rounded-[24px] border transition-colors hover:bg-gray-50" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background-color: ${i===1 ? colors.accent+'15' : colors.bg}">
                                         ${Icons.cart(20, i===1 ? colors.accent : colors.textMain)}
                                     </div>
                                     <div class="flex-1">
-                                        <h4 class="text-sm font-bold" style="color: ${colors.textMain}">Item ${i}</h4>
+                                        <h4 class="text-sm font-bold" style="color: ${colors.textMain}">Payment ${i}</h4>
+                                        <p class="text-xs" style="color: ${colors.textMuted}">Today, 10:00 AM</p>
                                     </div>
-                                    <span class="text-sm font-bold" style="color: ${colors.textMain}">-$120.00</span>
+                                    <span class="text-sm font-bold" style="color: ${colors.textMain}">-$${120*i}.00</span>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                 `;
-            } else {
-                // Generic Demo for others to save space in this single file example
+            } 
+            // --- CASE 2: ECOMMERCE / FOOD / BEAUTY (Shopping Style) ---
+            else if (['ecommerce', 'food', 'beauty'].includes(currentIndustry)) {
                 content = `
-                    ${header}
+                    <div class="px-6 flex justify-between items-center mt-2">
+                        <h2 class="text-2xl font-bold tracking-tight" style="color: ${colors.textMain}">Discover</h2>
+                        <div class="p-2 rounded-full border relative" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                            ${Icons.cart(20, colors.textMain)}
+                            <div class="absolute top-0 right-0 w-2.5 h-2.5 rounded-full border border-white" style="background-color: ${colors.primary}"></div>
+                        </div>
+                    </div>
+                    
                     <div class="px-6">
-                        <div class="flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-sm" style="background-color: ${colors.surface}">
+                        <div class="flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-sm border" style="background-color: ${colors.surface}; border-color: ${colors.border}">
                             ${Icons.search(20, colors.textMuted)}
                             <span class="text-sm opacity-50" style="color: ${colors.textMuted}">Search...</span>
                         </div>
                     </div>
-                    <div class="px-6 grid grid-cols-2 gap-3">
-                        <div class="p-5 rounded-[24px] border flex flex-col justify-between h-36" style="background-color: ${colors.primary}; border-color: ${colors.primary}">
-                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">${Icons.activity(16, '#fff')}</div>
-                            <h3 class="text-white text-3xl font-bold">98%</h3>
-                        </div>
-                        <div class="p-5 rounded-[24px] border flex flex-col justify-between h-36" style="background-color: ${colors.surface}; border-color: ${colors.border}">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: ${colors.accent}20">${Icons.pieChart(16, colors.accent)}</div>
-                            <h3 class="text-3xl font-bold" style="color: ${colors.textMain}">12k</h3>
+
+                    <div class="px-6">
+                        <div class="w-full aspect-[2/1] rounded-[24px] p-6 relative overflow-hidden flex items-center shadow-lg" 
+                             style="background-color: ${colors.secondary}">
+                            <div class="absolute -right-4 -top-4 w-32 h-32 bg-white opacity-20 rounded-full blur-2xl"></div>
+                            <div class="z-10 relative">
+                                <span class="text-white/80 font-bold text-[10px] tracking-wider uppercase">New Arrival</span>
+                                <h3 class="text-white text-2xl font-bold my-1">Summer<br/>Collection</h3>
+                                <button class="px-4 py-1.5 rounded-lg bg-white text-xs font-bold shadow-sm mt-2" style="color: ${colors.secondary}">Shop Now</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="px-6 pb-6">
-                        <h4 class="font-bold text-sm mb-3" style="color: ${colors.textMain}">Recent</h4>
-                        <div class="space-y-3">
-                            ${[1,2].map(i => `
-                                <div class="flex justify-between items-center p-3 rounded-xl transition-colors hover:bg-gray-50">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-2 h-2 rounded-full" style="background-color: ${i===1 ? colors.accent : colors.secondary}"></div>
-                                        <span class="text-sm font-medium" style="color: ${colors.textMain}">Activity ${i}</span>
+
+                    <div class="px-6">
+                        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                            ${['All', 'Popular', 'New', 'Sale'].map((cat, i) => `
+                                <span class="px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border"
+                                      style="background-color: ${i===0 ? colors.textMain : 'transparent'}; color: ${i===0 ? colors.bg : colors.textMuted}; border-color: ${i===0 ? colors.textMain : colors.border}">
+                                   ${cat}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="px-6 grid grid-cols-2 gap-4 pb-6">
+                        ${[1,2,3,4].map(i => `
+                            <div class="flex flex-col gap-2 group cursor-pointer">
+                                <div class="w-full aspect-[3/4] rounded-[20px] relative overflow-hidden bg-gray-100 flex items-center justify-center transition-transform hover:scale-[1.02]">
+                                    <div class="absolute inset-0 opacity-10" style="background-color: ${colors.primary}"></div>
+                                    ${currentIndustry === 'food' ? Icons.heart(24, colors.textMuted) : Icons.grid(24, colors.textMuted)}
+                                    <div class="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur shadow-sm">
+                                        ${Icons.heart(14, colors.accent)}
                                     </div>
-                                    <span class="text-xs" style="color: ${colors.textMuted}">2m ago</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold leading-tight" style="color: ${colors.textMain}">Product ${i}</h4>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <span class="text-xs font-bold" style="color: ${colors.textMuted}">$${45*i}.00</span>
+                                        <div class="w-6 h-6 rounded-full flex items-center justify-center shadow-sm" style="background-color: ${colors.primary}">
+                                            ${Icons.plus(12, '#fff')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            // --- CASE 3: TRAVEL ONLY (Booking Style) ---
+            else if (['travel'].includes(currentIndustry)) {
+                content = `
+                    <div class="px-6 mt-4">
+                        <h2 class="text-3xl font-bold tracking-tight leading-tight" style="color: ${colors.textMain}">Find your<br/>next trip</h2>
+                    </div>
+
+                    <div class="px-6">
+                        <div class="flex items-center gap-3 px-4 py-4 rounded-[20px] shadow-lg" style="background-color: ${colors.surface}; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05)">
+                            ${Icons.search(20, colors.primary)}
+                            <span class="text-sm font-medium flex-1" style="color: ${colors.textMuted}">Search destinations...</span>
+                            <div class="p-1.5 rounded-lg" style="background-color: ${colors.bg}">${Icons.grid(16, colors.textMain)}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 px-6 overflow-x-auto scrollbar-hide py-2">
+                        ${['Popular', 'Beach', 'Mountain', 'Urban'].map((item, i) => `
+                            <div class="flex flex-col items-center gap-2 cursor-pointer">
+                                <div class="w-14 h-14 rounded-[20px] flex items-center justify-center border transition-transform active:scale-95" 
+                                     style="background-color: ${i===0 ? colors.primary : colors.surface}; border-color: ${i===0 ? colors.primary : colors.border}">
+                                   ${Icons.mapPin(20, i===0 ? '#fff' : colors.textMuted)}
+                                </div>
+                                <span class="text-[10px] font-bold" style="color: ${i===0 ? colors.textMain : colors.textMuted}">${item}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="px-6 flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-6">
+                        ${[1,2].map(i => `
+                            <div class="snap-center shrink-0 w-[260px] aspect-[3/4] rounded-[32px] p-5 relative overflow-hidden flex flex-col justify-end shadow-xl group">
+                                <div class="absolute inset-0 bg-gray-300">
+                                    <div class="w-full h-full" style="background-color: ${colors.textMain}; opacity: 0.1"></div>
+                                </div>
+                                <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent)"></div>
+                                
+                                <div class="relative z-10 text-white">
+                                    <div class="flex items-center gap-1 mb-2">
+                                        <div class="flex gap-0.5">
+                                            ${[1,2,3,4,5].map(() => Icons.star(10, '#F59E0B', '#F59E0B')).join('')}
+                                        </div>
+                                    </div>
+                                    <h3 class="text-xl font-bold mb-1">Santorini, Greece</h3>
+                                    <div class="flex items-center gap-1 opacity-80 text-xs">
+                                        ${Icons.mapPin(12, 'currentColor')}
+                                        <span>Europe</span>
+                                    </div>
+                                </div>
+                                <div class="absolute top-4 right-4 p-2 rounded-full bg-white/20 backdrop-blur-md">
+                                    ${Icons.heart(16, '#fff')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            // --- CASE 3.5: REAL ESTATE ONLY (Property Style) ---
+            else if (['real_estate'].includes(currentIndustry)) {
+                content = `
+                    <div class="px-6 mt-4 flex justify-between items-end">
+                        <div>
+                            <p class="text-xs font-medium opacity-60" style="color: ${colors.textMain}">Current Location</p>
+                            <div class="flex items-center gap-1">
+                                ${Icons.mapPin(16, colors.primary)}
+                                <h2 class="text-lg font-bold" style="color: ${colors.textMain}">San Francisco, CA</h2>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-full border p-0.5 shadow-sm overflow-hidden" style="border-color: ${colors.border}">
+                             <img src="https://api.dicebear.com/7.x/notionists/svg?seed=agent" alt="avatar" />
+                        </div>
+                    </div>
+
+                    <div class="px-6">
+                        <div class="flex items-center gap-3 px-4 py-3.5 rounded-xl shadow-sm border" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                            ${Icons.search(20, colors.textMuted)}
+                            <span class="text-sm opacity-50 flex-1" style="color: ${colors.textMuted}">Search city, zip...</span>
+                            <div class="p-1.5 rounded-md" style="background-color: ${colors.bg}">
+                                ${Icons.grid(16, colors.textMain)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6">
+                        <div class="flex justify-between items-end mb-3">
+                            <h3 class="font-bold text-lg" style="color: ${colors.textMain}">Featured</h3>
+                            <span class="text-xs font-bold" style="color: ${colors.primary}">See All</span>
+                        </div>
+                        <div class="w-full aspect-[4/3] rounded-[24px] p-4 relative overflow-hidden shadow-lg flex flex-col justify-end"
+                             style="background-color: ${colors.surface}">
+                             <div class="absolute inset-0 bg-gray-300">
+                                <div class="w-full h-full opacity-20" style="background-color: ${colors.secondary}"></div>
+                             </div>
+                             <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent)"></div>
+                             
+                             <div class="relative z-10 text-white">
+                                <span class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold mb-2 inline-block">FOR SALE</span>
+                                <h3 class="text-2xl font-bold">$2,500,000</h3>
+                                <p class="text-sm opacity-90 mb-1">Palm Harbor Villa</p>
+                                <div class="flex items-center gap-3 text-[10px] opacity-80">
+                                    <span>4 Beds</span> • <span>3 Baths</span> • <span>2,400 sqft</span>
+                                </div>
+                             </div>
+                             <div class="absolute top-4 right-4 p-2 rounded-full bg-white/90 shadow-sm">
+                                ${Icons.heart(16, colors.accent, colors.accent)}
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6">
+                        <div class="flex gap-2 overflow-x-auto scrollbar-hide">
+                            ${['House', 'Apartment', 'Villa', 'Cottage'].map((cat, i) => `
+                                <span class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-colors"
+                                      style="background-color: ${i===0 ? colors.primary : colors.surface}; color: ${i===0 ? '#fff' : colors.textMuted}; border-color: ${i===0 ? colors.primary : colors.border}">
+                                   ${cat}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="px-6 pb-6">
+                        <h3 class="font-bold text-lg mb-3" style="color: ${colors.textMain}">Nearby</h3>
+                        <div class="space-y-3">
+                            ${[1, 2].map(i => `
+                                <div class="flex gap-3 p-3 rounded-[16px] border bg-white" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                                    <div class="w-20 h-20 rounded-xl bg-gray-200 shrink-0 relative overflow-hidden">
+                                        <div class="absolute inset-0 opacity-20" style="background-color: ${colors.primary}"></div>
+                                    </div>
+                                    <div class="flex-1 flex flex-col justify-center">
+                                        <h4 class="text-sm font-bold" style="color: ${colors.textMain}">Modern Apartment</h4>
+                                        <p class="text-[10px] mb-1" style="color: ${colors.textMuted}">Highland Ave, CA</p>
+                                        <span class="text-sm font-bold" style="color: ${colors.primary}">$850,000</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            // --- CASE 4: EDUCATION / SOCIAL (Profile/Feed Style) ---
+            else if (['education', 'social'].includes(currentIndustry)) {
+                content = `
+                    ${headerSimple('Dashboard', `Hi, ${currentIndustry === 'social' ? 'Creator' : 'Student'}`)}
+                    
+                    <div class="px-6">
+                        <div class="p-5 rounded-[24px] border relative overflow-hidden shadow-sm" style="background-color: ${colors.primary}; border-color: ${colors.primary}">
+                            <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full border-[20px] opacity-10" style="border-color: white"></div>
+                            <div class="relative z-10">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-2 rounded-xl bg-white/20 backdrop-blur-sm text-white">
+                                        ${Icons.activity(20, 'white')}
+                                    </div>
+                                    <span class="px-2 py-1 rounded-lg bg-white text-[10px] font-bold" style="color: ${colors.primary}">+12%</span>
+                                </div>
+                                <h3 class="text-3xl font-bold text-white">${currentIndustry === 'education' ? '85%' : '12.4k'}</h3>
+                                <p class="text-white/70 text-xs mt-1">${currentIndustry === 'education' ? 'Course Completed' : 'New Followers'}</p>
+                                <div class="mt-4 h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
+                                    <div class="h-full bg-white w-[85%] rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6">
+                        <h4 class="font-bold text-sm mb-3" style="color: ${colors.textMain}">${currentIndustry === 'education' ? 'Continue Learning' : 'Recent Posts'}</h4>
+                        <div class="space-y-3">
+                            ${[1,2,3].map(i => `
+                                <div class="flex gap-4 p-3 rounded-[20px] border transition-transform active:scale-98 cursor-pointer hover:shadow-sm" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                                    <div class="w-16 h-16 rounded-xl flex items-center justify-center shrink-0" style="background-color: ${i===1 ? colors.secondary+'20' : colors.bg}">
+                                        ${i===1 ? Icons.play(24, colors.secondary, colors.secondary) : Icons.grid(24, colors.textMuted)}
+                                    </div>
+                                    <div class="flex-1 flex flex-col justify-center">
+                                        <span class="text-[10px] font-bold uppercase mb-0.5" style="color: ${colors.accent}">${currentIndustry === 'education' ? 'Chapter '+i : 'Trending'}</span>
+                                        <h4 class="text-sm font-bold leading-tight" style="color: ${colors.textMain}">
+                                            ${currentIndustry === 'education' ? 'UX Principles ' + i : 'Design Trends 2024'}
+                                        </h4>
+                                        <p class="text-[10px] mt-1" style="color: ${colors.textMuted}">15 mins ago</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            // --- CASE 5: AI / MEDICAL / LOGISTICS / GAMING (Dashboard Style) ---
+            else {
+                content = `
+                    <div class="px-6 flex justify-between items-center mt-2">
+                        <div>
+                            <h2 class="text-2xl font-bold tracking-tight" style="color: ${colors.textMain}">Control</h2>
+                            <p class="text-xs font-medium opacity-60" style="color: ${colors.textMain}">System Status: Online</p>
+                        </div>
+                        <div class="p-2 rounded-full border" style="border-color: ${colors.border}; background-color: ${colors.surface}">
+                            ${Icons.bell(20, colors.textMuted)}
+                        </div>
+                    </div>
+
+                    <div class="px-6 grid grid-cols-2 gap-3">
+                        <div class="p-4 rounded-[24px] border flex flex-col justify-between h-32" style="background-color: ${colors.primary}; border-color: ${colors.primary}">
+                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">${Icons.activity(16, '#fff')}</div>
+                            <div>
+                                <h3 class="text-white text-2xl font-bold">98%</h3>
+                                <p class="text-white/60 text-[10px] uppercase font-bold">Efficiency</p>
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-[24px] border flex flex-col justify-between h-32" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: ${colors.accent}20">${Icons.pieChart(16, colors.accent)}</div>
+                            <div>
+                                <h3 class="text-2xl font-bold" style="color: ${colors.textMain}">124</h3>
+                                <p class="text-[10px] uppercase font-bold" style="color: ${colors.textMuted}">Active Nodes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6">
+                        <div class="p-5 rounded-[24px] border" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-bold text-sm" style="color: ${colors.textMain}">Analytics</h4>
+                                <span class="text-[10px] px-2 py-1 rounded border" style="color: ${colors.textMuted}; border-color: ${colors.border}">Weekly</span>
+                            </div>
+                            <div class="flex items-end justify-between h-24 gap-2">
+                                ${[40, 60, 35, 80, 55, 90, 45].map((h, i) => `
+                                    <div class="w-full rounded-sm transition-all hover:opacity-80" 
+                                         style="height: ${h}%; background-color: ${i === 5 ? colors.primary : colors.bg}"></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6 pb-6">
+                        <h4 class="font-bold text-sm mb-3" style="color: ${colors.textMain}">Logs</h4>
+                        <div class="space-y-2">
+                            ${[1,2].map(i => `
+                                <div class="flex justify-between items-center p-3 rounded-xl border transition-colors hover:bg-gray-50" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full" style="background-color: ${i===1 ? colors.accent : 'green'}"></div>
+                                        <span class="text-xs font-mono" style="color: ${colors.textMain}">SYS_Event_${1020+i}</span>
+                                    </div>
+                                    <span class="text-[10px]" style="color: ${colors.textMuted}">2ms</span>
                                 </div>
                             `).join('')}
                         </div>
