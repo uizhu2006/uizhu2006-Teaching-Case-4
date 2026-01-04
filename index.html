@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI 配色大师 - 优途AI/UI/UX特训营</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义样式补充 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        /* 隐藏滚动条但保留功能 */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 玻璃拟态与动效类 */
+        .glass-panel {
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+        }
+        .glass-card {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .modern-shadow {
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15);
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+        
+        /* 动画 */
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* 输入框 Focus Ring 模拟 */
+        .focus-ring-simulate:focus-within {
+            box-shadow: 0 0 0 2px var(--ring-color);
+        }
+
+        /* 选中态过渡 */
+        .tab-btn { transition: all 0.3s ease; }
+        .industry-btn { transition: all 0.2s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
+
+    <!-- 左侧控制面板 -->
+    <div class="w-full md:w-1/3 flex flex-col gap-6">
+        
+        <!-- Header & Branding -->
+        <header>
+            <div class="flex items-center gap-2 mb-1">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg">P</div>
+                <h1 class="text-2xl font-bold text-gray-900">Palette Pro</h1>
+                <span class="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">v4.0</span>
+            </div>
+            <p class="text-sm text-gray-500 mb-2">UI/UX 设计师的专业配色生成器。赋能 AI 与设计教学。</p>
+            
+            <!-- 品牌宣传文案 -->
+            <div class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                <p class="text-xs font-bold text-blue-800">🚀 优途AI/UI/UX特训营</p>
+                <div class="text-xs text-blue-600 mt-1 flex items-center gap-1.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <span class="font-mono font-bold select-all">180-1879-6460</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Control Panel -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <!-- 1. Industry Select -->
+            <div>
+                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 block flex items-center gap-2">
+                    <span>1. 选择行业场景</span>
+                    <span class="bg-gray-100 text-gray-500 px-1.5 rounded text-[10px]" id="industry-count">0</span>
+                </label>
+                <div class="grid grid-cols-1 gap-2 max-h-[280px] overflow-y-auto pr-2 scrollbar-thin" id="industry-list">
+                    <!-- Javascript will populate this -->
+                </div>
+                <p class="text-xs text-gray-400 mt-3 px-1 leading-relaxed border-l-2 border-gray-200 pl-3" id="industry-desc">
+                    Description text.
+                </p>
+            </div>
+
+            <!-- 2. Mode Select -->
+            <div>
+                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">2. 选择视觉风格</label>
+                <div class="flex bg-gray-100 p-1 rounded-xl">
+                    <button onclick="setMode('light')" id="btn-mode-light" class="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all">
+                        ☀️ 浅色
+                    </button>
+                    <button onclick="setMode('dark')" id="btn-mode-dark" class="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all">
+                        🌙 深色
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Palette Details -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">色板参数</label>
+                <div class="flex gap-2">
+                    <button onclick="copyCSS()" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors tooltip relative group" title="复制 CSS 变量">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span id="copy-feedback" class="hidden text-green-600 text-xs font-bold absolute -top-8 left-1/2 -translate-x-1/2 bg-white shadow py-1 px-2 rounded border border-green-100 whitespace-nowrap">已复制!</span>
+                    </button>
+                    <!-- 修改了这里的按钮点击事件和 title -->
+                    <button onclick="downloadFigmaSVG()" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors" title="下载 Figma 可编辑色板 (SVG)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-3" id="color-list">
+                <!-- Javascript will populate this -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧预览面板 -->
+    <div class="flex-1 bg-gray-200 rounded-3xl px-8 pb-8 pt-6 flex items-start justify-center overflow-hidden relative">
+        <!-- 背景网格 -->
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#64748b 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+        <!-- 手机容器 -->
+        <div id="phone-container" class="relative w-[375px] h-[780px] rounded-[50px] shadow-2xl overflow-hidden border-[8px] border-white ring-1 ring-black/5 transition-colors duration-500 ease-in-out bg-opacity-100 flex flex-col">
+            
+            <!-- 状态栏 -->
+            <div class="h-12 w-full flex justify-between items-center px-7 pt-3 z-20 relative shrink-0">
+                <span id="status-time" class="text-xs font-bold tracking-wide">9:41</span>
+                <div class="flex gap-1.5 items-center">
+                    <div class="h-2.5 w-2.5 rounded-full bg-current"></div>
+                    <div class="h-2.5 w-2.5 rounded-full bg-current opacity-50"></div>
+                </div>
+            </div>
+
+            <!-- 视图切换 (Floating) -->
+            <div class="absolute top-14 left-0 right-0 z-30 flex justify-center pointer-events-none">
+                <div id="view-switcher-bg" class="flex p-1 rounded-full pointer-events-auto shadow-sm backdrop-blur-md transition-colors duration-300 border">
+                    <button onclick="setView('components')" id="btn-view-components" class="px-4 py-1.5 rounded-full text-[10px] font-bold transition-all duration-300">
+                        组件 Kit
+                    </button>
+                    <button onclick="setView('demo')" id="btn-view-demo" class="px-4 py-1.5 rounded-full text-[10px] font-bold transition-all duration-300">
+                        界面 Demo
+                    </button>
+                </div>
+            </div>
+
+            <!-- 内容区域 -->
+            <div id="phone-content" class="flex-1 overflow-y-auto pb-28 scrollbar-hide space-y-6 h-full relative pt-16">
+                <!-- Javascript will inject content here -->
+            </div>
+
+            <!-- 底部导航 -->
+            <div id="bottom-bar" class="absolute bottom-6 left-6 right-6 h-[72px] rounded-[24px] flex justify-around items-center px-2 shadow-2xl z-40 glass-panel">
+                <!-- Javascript will populate icons -->
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. 图标生成函数 ---
+        const Icons = {
+            smartphone: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+            layers: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+            user: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+            search: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+            heart: (s=24, c="currentColor", f="none") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${f}" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+            check: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+            bell: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+            grid: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
+            activity: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+            creditCard: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+            play: (s=24, c="currentColor", f="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${f}" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
+            cart: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
+            star: (s=24, c="currentColor", f="none") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${f}" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+            mapPin: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+            pieChart: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`,
+            plus: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+            minus: (s=24, c="currentColor") => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`
+        };
+
+        // --- 2. 数据库 ---
+        const PALETTE_DB = {
+            education: { label: '在线教育 (EdTech)', description: '明快的学院蓝搭配温暖的辅助色，传递知识与成长的积极信号。', modes: { light: { primary: '#4F46E5', secondary: '#818CF8', accent: '#F59E0B', bg: '#F8FAFC', surface: '#FFFFFF', textMain: '#1E293B', textMuted: '#64748B', border: '#E2E8F0' }, dark: { primary: '#6366F1', secondary: '#4F46E5', accent: '#FBBF24', bg: '#0F172A', surface: '#1E293B', textMain: '#F1F5F9', textMuted: '#94A3B8', border: '#334155' } } },
+            ai_tech: { label: 'AI & 科技 (SaaS)', description: '极简黑白灰基调，点缀高饱和霓虹色，营造未来感与智能感。', modes: { light: { primary: '#18181B', secondary: '#52525B', accent: '#8B5CF6', bg: '#FFFFFF', surface: '#FAFAFA', textMain: '#09090B', textMuted: '#71717A', border: '#E4E4E7' }, dark: { primary: '#8B5CF6', secondary: '#A78BFA', accent: '#22D3EE', bg: '#09090B', surface: '#18181B', textMain: '#FAFAFA', textMuted: '#A1A1AA', border: '#27272A' } } },
+            fintech: { label: '金融理财 (Fintech)', description: '经典的深海蓝或稳重的墨绿色，体现安全、专业与财富增值。', modes: { light: { primary: '#0D9488', secondary: '#14B8A6', accent: '#F43F5E', bg: '#F0FDFA', surface: '#FFFFFF', textMain: '#134E4A', textMuted: '#64748B', border: '#CCFBF1' }, dark: { primary: '#2DD4BF', secondary: '#0D9488', accent: '#FB7185', bg: '#042F2E', surface: '#115E59', textMain: '#F0FDFA', textMuted: '#99F6E4', border: '#134E4A' } } },
+            ecommerce: { label: '时尚电商 (E-Commerce)', description: '高饱和的橙红或玫红，激发购物冲动，充满活力与紧迫感。', modes: { light: { primary: '#EA580C', secondary: '#F97316', accent: '#10B981', bg: '#FFF7ED', surface: '#FFFFFF', textMain: '#431407', textMuted: '#9A3412', border: '#FED7AA' }, dark: { primary: '#F97316', secondary: '#EA580C', accent: '#34D399', bg: '#0C0A09', surface: '#1C1917', textMain: '#FFEDD5', textMuted: '#FB923C', border: '#44403C' } } },
+            real_estate: { label: '房地产 (Real Estate)', description: '深邃的森林绿搭配金色，营造高端、奢华与品质感。', modes: { light: { primary: '#064E3B', secondary: '#065F46', accent: '#D97706', bg: '#F9FAFB', surface: '#FFFFFF', textMain: '#022C22', textMuted: '#6B7280', border: '#D1FAE5' }, dark: { primary: '#10B981', secondary: '#34D399', accent: '#F59E0B', bg: '#022C22', surface: '#064E3B', textMain: '#ECFDF5', textMuted: '#6EE7B7', border: '#065F46' } } },
+            medical: { label: '医疗健康 (Healthcare)', description: '清新的天蓝或薄荷绿，传递洁净、冷静与疗愈的感受。', modes: { light: { primary: '#0284C7', secondary: '#38BDF8', accent: '#EF4444', bg: '#F0F9FF', surface: '#FFFFFF', textMain: '#0C4A6E', textMuted: '#64748B', border: '#BAE6FD' }, dark: { primary: '#38BDF8', secondary: '#0284C7', accent: '#F87171', bg: '#082F49', surface: '#0C4A6E', textMain: '#E0F2FE', textMuted: '#7DD3FC', border: '#075985' } } },
+            social: { label: 'Z世代社交 (Social/GenZ)', description: '大胆的酸性绿或电光紫，打破常规，彰显个性与潮流。', modes: { light: { primary: '#9333EA', secondary: '#C026D3', accent: '#EAB308', bg: '#FAF5FF', surface: '#FFFFFF', textMain: '#3B0764', textMuted: '#7E22CE', border: '#E9D5FF' }, dark: { primary: '#A855F7', secondary: '#D946EF', accent: '#FACC15', bg: '#1E1B4B', surface: '#312E81', textMain: '#FAF5FF', textMuted: '#C4B5FD', border: '#4338CA' } } },
+            travel: { label: '旅游出行 (Travel)', description: '令人向往的海洋蓝或落日橘，唤起探索欲与自由感。', modes: { light: { primary: '#0891B2', secondary: '#22D3EE', accent: '#F43F5E', bg: '#ECFEFF', surface: '#FFFFFF', textMain: '#164E63', textMuted: '#64748B', border: '#CFFAFE' }, dark: { primary: '#22D3EE', secondary: '#0891B2', accent: '#FB7185', bg: '#083344', surface: '#155E75', textMain: '#ECFEFF', textMuted: '#67E8F9', border: '#164E63' } } },
+            food: { label: '餐饮美食 (Food & Drink)', description: '诱人的红色或暖黄色，促进食欲，营造温馨氛围。', modes: { light: { primary: '#DC2626', secondary: '#EF4444', accent: '#FBBF24', bg: '#FEF2F2', surface: '#FFFFFF', textMain: '#450A0A', textMuted: '#991B1B', border: '#FECACA' }, dark: { primary: '#EF4444', secondary: '#DC2626', accent: '#F59E0B', bg: '#450A0A', surface: '#7F1D1D', textMain: '#FEF2F2', textMuted: '#FCA5A5', border: '#991B1B' } } },
+            beauty: { label: '美妆护肤 (Beauty)', description: '柔和的裸粉色或高级的香槟金，体现优雅与女性魅力。', modes: { light: { primary: '#BE185D', secondary: '#DB2777', accent: '#FBCFE8', bg: '#FFF1F2', surface: '#FFFFFF', textMain: '#831843', textMuted: '#BC5176', border: '#FCE7F3' }, dark: { primary: '#F472B6', secondary: '#EC4899', accent: '#FDF2F8', bg: '#500724', surface: '#831843', textMain: '#FDF2F8', textMuted: '#FBCFE8', border: '#9D174D' } } },
+            gaming: { label: '游戏电竞 (Gaming)', description: '高对比度的暗黑背景配霓虹色，酷炫且聚焦。', modes: { light: { primary: '#7C3AED', secondary: '#8B5CF6', accent: '#10B981', bg: '#F3F4F6', surface: '#FFFFFF', textMain: '#111827', textMuted: '#6B7280', border: '#E5E7EB' }, dark: { primary: '#8B5CF6', secondary: '#7C3AED', accent: '#34D399', bg: '#111827', surface: '#1F2937', textMain: '#F9FAFB', textMuted: '#9CA3AF', border: '#374151' } } },
+            logistics: { label: '物流运输 (Logistics)', description: '可靠的工业蓝或醒目的警示黄，强调效率与速度。', modes: { light: { primary: '#2563EB', secondary: '#3B82F6', accent: '#EAB308', bg: '#EFF6FF', surface: '#FFFFFF', textMain: '#1E3A8A', textMuted: '#60A5FA', border: '#DBEAFE' }, dark: { primary: '#3B82F6', secondary: '#2563EB', accent: '#FACC15', bg: '#172554', surface: '#1E40AF', textMain: '#EFF6FF', textMuted: '#93C5FD', border: '#1D4ED8' } } }
+        };
+
+        // --- 3. 状态管理 ---
+        let currentIndustry = 'education';
+        let currentMode = 'light';
+        let activeTab = 'components';
+        let colors = PALETTE_DB[currentIndustry].modes[currentMode];
+
+        // --- 4. 初始化 ---
+        function init() {
+            renderIndustryList();
+            updatePaletteDisplay();
+            renderApp();
+            document.getElementById('industry-count').innerText = Object.keys(PALETTE_DB).length;
+        }
+
+        // --- 5. 渲染逻辑 ---
+        
+        function setIndustry(key) {
+            currentIndustry = key;
+            updateColors();
+            renderIndustryList(); // Re-render to update active state
+            renderApp();
+        }
+
+        function setMode(m) {
+            currentMode = m;
+            updateColors();
+            renderApp();
+            // Update button styles
+            document.getElementById('btn-mode-light').className = `flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${m === 'light' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`;
+            document.getElementById('btn-mode-dark').className = `flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${m === 'dark' ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`;
+        }
+
+        function setView(tab) {
+            activeTab = tab;
+            renderApp();
+        }
+
+        function updateColors() {
+            colors = PALETTE_DB[currentIndustry].modes[currentMode];
+            updatePaletteDisplay();
+        }
+
+        function renderIndustryList() {
+            const list = document.getElementById('industry-list');
+            list.innerHTML = Object.keys(PALETTE_DB).map(key => `
+                <button onclick="setIndustry('${key}')"
+                    class="flex items-center justify-between w-full px-4 py-3 rounded-xl border text-left transition-all duration-200 group ${currentIndustry === key ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-500' : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'}">
+                    <span class="font-medium text-sm">${PALETTE_DB[key].label}</span>
+                    <div class="w-2 h-2 rounded-full transition-colors ${currentIndustry === key ? 'bg-blue-500' : 'bg-gray-200 group-hover:bg-blue-200'}"></div>
+                </button>
+            `).join('');
+            document.getElementById('industry-desc').innerText = PALETTE_DB[currentIndustry].description;
+        }
+
+        function updatePaletteDisplay() {
+            const list = document.getElementById('color-list');
+            const colorKeys = [
+                { k: 'primary', l: 'Primary (主色)' },
+                { k: 'secondary', l: 'Secondary (辅助)' },
+                { k: 'accent', l: 'Accent (强调)' },
+                { k: 'bg', l: 'Background (背景)' },
+                { k: 'surface', l: 'Surface (容器)' },
+                { k: 'textMain', l: 'Text (正文)' }
+            ];
+            list.innerHTML = colorKeys.map(item => `
+                <div onclick="copyToClipboard('${colors[item.k]}')" class="flex items-center gap-3 group cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                    <div class="w-10 h-10 rounded-full shadow-sm border border-black/5 ring-2 ring-transparent group-hover:ring-gray-200 transition-all relative overflow-hidden" style="background-color: ${colors[item.k]}">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-black/5 to-transparent pointer-events-none"></div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-400 font-medium mb-0.5">${item.l}</p>
+                        <p class="text-sm font-mono font-bold text-gray-700 group-hover:text-blue-600 flex items-center gap-2">${colors[item.k]}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderApp() {
+            // Update Phone Container Background
+            const phone = document.getElementById('phone-container');
+            phone.style.backgroundColor = colors.bg;
+
+            // Update Status Bar
+            const statusTime = document.getElementById('status-time');
+            statusTime.style.color = colors.textMain;
+            // Update status dots color using a little CSS variable trick or direct style
+            phone.style.color = colors.textMain; 
+
+            // Update View Switcher
+            const switcherBg = document.getElementById('view-switcher-bg');
+            switcherBg.style.backgroundColor = colors.surface + 'D9'; // Adding opacity
+            switcherBg.style.borderColor = colors.border;
+            
+            const btnComponents = document.getElementById('btn-view-components');
+            const btnDemo = document.getElementById('btn-view-demo');
+            
+            const activeStyle = `background-color: ${colors.primary}; color: #fff;`;
+            const inactiveStyle = `background-color: transparent; color: ${colors.textMuted};`;
+            
+            btnComponents.style.cssText = activeTab === 'components' ? activeStyle : inactiveStyle;
+            btnDemo.style.cssText = activeTab === 'demo' ? activeStyle : inactiveStyle;
+
+            // Render Content
+            const contentDiv = document.getElementById('phone-content');
+            if (activeTab === 'components') {
+                contentDiv.innerHTML = getComponentsHTML();
+            } else {
+                contentDiv.innerHTML = getDemoHTML();
+            }
+
+            // Render Bottom Bar
+            renderBottomBar();
+        }
+
+        // --- 6. HTML 生成器 (核心逻辑) ---
+
+        function getComponentsHTML() {
+            // Configuration logic
+            let borderRadius = '12px';
+            if (['fintech', 'real_estate', 'logistics'].includes(currentIndustry)) borderRadius = '8px';
+            else if (['ecommerce', 'food', 'beauty'].includes(currentIndustry)) borderRadius = '24px';
+            else if (['ai_tech', 'gaming'].includes(currentIndustry)) borderRadius = '4px';
+
+            const cardStyle = `background-color: ${colors.surface}; border: 1px solid ${colors.border}; border-radius: ${borderRadius};`;
+
+            // Dynamic Card Content
+            let dynamicCard = '';
+            if (['fintech', 'real_estate', 'logistics'].includes(currentIndustry)) {
+                dynamicCard = `
+                <div class="flex items-center justify-between p-4 border transition-all hover:shadow-md" style="${cardStyle}">
+                   <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: ${colors.bg}">
+                         ${Icons.activity(20, colors.textMain)}
+                      </div>
+                      <div>
+                         <h4 class="text-sm font-bold" style="color: ${colors.textMain}">Transfer Sent</h4>
+                         <p class="text-xs" style="color: ${colors.textMuted}">ID: #992812</p>
+                      </div>
+                   </div>
+                   <span class="text-sm font-bold" style="color: ${colors.primary}">-$450.00</span>
+                </div>`;
+            } else if (['ecommerce', 'food', 'beauty'].includes(currentIndustry)) {
+                dynamicCard = `
+                <div class="flex gap-3 p-3 border" style="${cardStyle}">
+                   <div class="w-20 h-20 rounded-lg bg-gray-100 relative overflow-hidden flex items-center justify-center">
+                      ${Icons.cart(24, colors.textMuted)}
+                   </div>
+                   <div class="flex-1 flex flex-col justify-center">
+                      <div class="flex justify-between items-start">
+                         <h4 class="text-sm font-bold" style="color: ${colors.textMain}">Premium Item</h4>
+                         ${Icons.heart(14, colors.accent, colors.accent)}
+                      </div>
+                      <div class="flex gap-1 my-1">
+                         ${[1,2,3,4,5].map(() => `<div class="w-2 h-2 rounded-full" style="background-color: ${colors.accent}"></div>`).join('')}
+                      </div>
+                      <span class="text-sm font-bold" style="color: ${colors.primary}">$129.00</span>
+                   </div>
+                </div>`;
+            } else {
+                dynamicCard = `
+                <div class="p-4 border" style="${cardStyle}">
+                   <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center gap-3">
+                         <div class="w-10 h-10 rounded-full bg-gray-200 border-2" style="border-color: ${colors.accent}"></div>
+                         <div>
+                            <h4 class="text-sm font-bold" style="color: ${colors.textMain}">Sarah Connor</h4>
+                            <p class="text-xs" style="color: ${colors.textMuted}">UX Mentor</p>
+                         </div>
+                      </div>
+                      <button class="px-3 py-1 text-xs font-bold rounded-full border" style="border-color: ${colors.primary}; color: ${colors.primary}">Follow</button>
+                   </div>
+                   <div class="h-1.5 w-full rounded-full overflow-hidden" style="background-color: ${colors.bg}">
+                      <div class="h-full w-[70%]" style="background-color: ${colors.secondary}"></div>
+                   </div>
+                   <div class="flex justify-between mt-1">
+                      <span class="text-[10px]" style="color: ${colors.textMuted}">Progress</span>
+                      <span class="text-[10px] font-bold" style="color: ${colors.textMain}">70%</span>
+                   </div>
+                </div>`;
+            }
+
+            return `
+            <div class="px-6 space-y-8 pt-2">
+                <div>
+                    <h2 class="text-xl font-bold" style="color: ${colors.textMain}">Design System</h2>
+                    <p class="text-xs" style="color: ${colors.textMuted}">Atomic components for ${PALETTE_DB[currentIndustry].label}</p>
+                </div>
+
+                <section>
+                    <label class="text-[10px] font-bold uppercase tracking-wider mb-3 block opacity-60" style="color: ${colors.textMuted}">01. Interactive</label>
+                    <div class="space-y-3">
+                        <button class="w-full py-3.5 font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+                                style="background-color: ${colors.primary}; color: #fff; border-radius: ${borderRadius}">
+                            <span>Primary Action</span>
+                            ${Icons.check(16)}
+                        </button>
+                        <div class="flex gap-3">
+                            <button class="flex-1 py-3.5 font-bold text-sm border active:scale-95 transition-all"
+                                    style="border-color: ${colors.primary}; color: ${colors.primary}; background-color: transparent; border-radius: ${borderRadius}">
+                                Secondary
+                            </button>
+                            <button class="flex-1 py-3.5 font-bold text-sm active:scale-95 transition-all hover:bg-black/5"
+                                    style="background-color: ${colors.surface}; color: ${colors.textMuted}; border: 1px solid ${colors.border}; border-radius: ${borderRadius}">
+                                Ghost
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <label class="text-[10px] font-bold uppercase tracking-wider mb-3 block opacity-60" style="color: ${colors.textMuted}">02. Inputs</label>
+                    <div class="space-y-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold ml-1" style="color: ${colors.textMuted}">Email Address</label>
+                            <div class="flex items-center gap-3 px-4 py-3.5 border transition-all focus-ring-simulate" 
+                                 style="${cardStyle} --ring-color: ${colors.primary}30">
+                                ${Icons.user(18, colors.textMuted)}
+                                <span class="text-sm opacity-80 flex-1" style="color: ${colors.textMain}">alex@design.com</span>
+                                ${Icons.check(16, colors.accent)}
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between px-2 py-2 rounded-xl" style="background-color: ${colors.surface}; border: 1px solid ${colors.border}">
+                            <div class="flex items-center gap-2">
+                                <div class="w-5 h-5 flex items-center justify-center transition-all shadow-sm" style="background-color: ${colors.primary}; border-radius: ${currentIndustry === 'ai_tech' ? '2px' : '6px'}">
+                                    ${Icons.check(12, '#fff')}
+                                </div>
+                                <span class="text-xs font-bold" style="color: ${colors.textMain}">On</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-5 h-5 rounded-full border-[6px] transition-all bg-white" style="border-color: ${colors.secondary}"></div>
+                                <span class="text-xs font-bold" style="color: ${colors.textMain}">Radio</span>
+                            </div>
+                            <div class="w-10 h-6 rounded-full relative transition-colors" style="background-color: ${colors.accent}">
+                                <div class="w-4 h-4 bg-white rounded-full shadow-sm absolute top-1 right-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <label class="text-[10px] font-bold uppercase tracking-wider mb-3 block opacity-60" style="color: ${colors.textMuted}">03. Contextual Card</label>
+                    ${dynamicCard}
+                </section>
+
+                <section>
+                    <label class="text-[10px] font-bold uppercase tracking-wider mb-3 block opacity-60" style="color: ${colors.textMuted}">04. Status</label>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 text-xs font-bold" style="background-color: ${colors.primary}; color: #fff; border-radius: 100px">Active</span>
+                        <span class="px-3 py-1 text-xs font-bold border" style="border-color: ${colors.border}; color: ${colors.textMuted}; border-radius: 100px">Inactive</span>
+                        <span class="px-3 py-1 text-xs font-bold" style="background-color: ${colors.accent}20; color: ${colors.accent}; border-radius: 100px">${currentIndustry === 'ecommerce' ? 'SALE' : 'New'}</span>
+                    </div>
+                </section>
+
+                <section>
+                    <label class="text-[10px] font-bold uppercase tracking-wider mb-3 block opacity-60" style="color: ${colors.textMuted}">05. Business List</label>
+                    <div class="flex flex-col gap-2">
+                        ${[1, 2].map(i => `
+                        <div class="flex items-center justify-between p-3 border transition-colors hover:bg-black/5 cursor-pointer" style="${cardStyle} background-color: ${colors.surface}">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 flex items-center justify-center relative overflow-hidden" style="background-color: ${i === 1 ? colors.primary + '15' : colors.bg}; border-radius: ${borderRadius}">
+                                    ${i === 1 ? Icons.check(18, colors.primary) : Icons.layers(18, colors.textMuted)}
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold" style="color: ${colors.textMain}">
+                                        ${currentIndustry === 'fintech' ? 'Payment Received' : currentIndustry === 'ecommerce' ? 'Order Shipped' : 'System Update'}
+                                    </h4>
+                                    <p class="text-[10px] font-medium" style="color: ${colors.textMuted}">
+                                        ${i === 1 ? 'Just now' : '2 hours ago'} • <span style="color: ${colors.secondary}">Completed</span>
+                                    </p>
+                                </div>
+                            </div>
+                            ${Icons.play(12, colors.textMuted)}
+                        </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <section>
+                    <label class="text-[10px] font-bold uppercase tracking-wider mb-3 block opacity-60" style="color: ${colors.textMuted}">06. Product Card</label>
+                    <div class="w-48 p-3 border shadow-sm transition-transform hover:-translate-y-1 duration-300" style="${cardStyle}">
+                        <div class="w-full aspect-square mb-3 relative overflow-hidden flex items-center justify-center" 
+                             style="background-color: ${colors.bg}; border-radius: ${borderRadius === '24px' ? '16px' : '4px'}">
+                           ${Icons.grid(32, colors.textMuted)}
+                           <div class="opacity-30 absolute inset-0 bg-current"></div>
+                           ${currentIndustry === 'ecommerce' ? `<div class="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold bg-white/90 backdrop-blur shadow-sm rounded-md" style="color: ${colors.primary}">-20%</div>` : ''}
+                        </div>
+                        <div>
+                           <div class="flex justify-between items-start mb-1">
+                              <h4 class="text-sm font-bold leading-tight" style="color: ${colors.textMain}">
+                                 ${currentIndustry === 'real_estate' ? 'Modern Villa' : currentIndustry === 'education' ? 'UI Masterclass' : 'Pro Widget'}
+                              </h4>
+                           </div>
+                           <p class="text-[10px] mb-3 line-clamp-1" style="color: ${colors.textMuted}">
+                              ${currentIndustry === 'real_estate' ? 'Beverly Hills, CA' : 'Limited Edition'}
+                           </p>
+                           <div class="flex items-center justify-between">
+                              <span class="text-sm font-bold" style="color: ${colors.primary}">
+                                 ${currentIndustry === 'fintech' ? '$45.00' : '$299'}
+                              </span>
+                              <button class="p-1.5 rounded-lg hover:brightness-95 transition-all" style="background-color: ${colors.secondary}; color: #fff">
+                                 ${Icons.plus(14)}
+                              </button>
+                           </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="h-4"></div>
+            </div>
+            `;
+        }
+
+        function getDemoHTML() {
+            // Simplified logic for brevity, expands on React version
+            let content = '';
+            
+            // Common Header
+            const header = `
+                <div class="px-6 flex justify-between items-center mt-2">
+                    <div>
+                        <p class="text-xs font-medium mb-0.5" style="color: ${colors.textMuted}">Welcome</p>
+                        <h2 class="text-2xl font-bold tracking-tight" style="color: ${colors.textMain}">Overview</h2>
+                    </div>
+                    <div class="w-11 h-11 rounded-full border p-0.5 shadow-sm overflow-hidden" style="border-color: ${colors.border}">
+                        <div class="w-full h-full bg-gray-200"></div>
+                    </div>
+                </div>
+            `;
+
+            if (['fintech'].includes(currentIndustry)) {
+                content = `
+                    ${header}
+                    <div class="px-6">
+                        <div class="w-full aspect-[1.6] rounded-[24px] p-6 relative overflow-hidden shadow-2xl flex flex-col justify-between"
+                             style="background: linear-gradient(135deg, ${colors.primary}, ${colors.secondary})">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 blur-3xl rounded-full"></div>
+                            <div class="z-10 text-white">
+                                <span class="font-mono tracking-widest text-xs opacity-80">**** 4829</span>
+                                <h3 class="text-3xl font-bold mt-4">$24,562.00</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-6">
+                        <h3 class="font-bold text-lg mb-4" style="color: ${colors.textMain}">Transactions</h3>
+                        <div class="space-y-3">
+                            ${[1,2,3].map(i => `
+                                <div class="flex items-center gap-4 p-4 rounded-[24px] border" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background-color: ${i===1 ? colors.accent+'15' : colors.surface}">
+                                        ${Icons.cart(20, i===1 ? colors.accent : colors.textMain)}
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold" style="color: ${colors.textMain}">Item ${i}</h4>
+                                    </div>
+                                    <span class="text-sm font-bold" style="color: ${colors.textMain}">-$120.00</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Generic Demo for others to save space in this single file example
+                content = `
+                    ${header}
+                    <div class="px-6">
+                        <div class="flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-sm" style="background-color: ${colors.surface}">
+                            ${Icons.search(20, colors.textMuted)}
+                            <span class="text-sm opacity-50" style="color: ${colors.textMuted}">Search...</span>
+                        </div>
+                    </div>
+                    <div class="px-6 grid grid-cols-2 gap-3">
+                        <div class="p-5 rounded-[24px] border flex flex-col justify-between h-36" style="background-color: ${colors.primary}; border-color: ${colors.primary}">
+                            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">${Icons.activity(16, '#fff')}</div>
+                            <h3 class="text-white text-3xl font-bold">98%</h3>
+                        </div>
+                        <div class="p-5 rounded-[24px] border flex flex-col justify-between h-36" style="background-color: ${colors.surface}; border-color: ${colors.border}">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: ${colors.accent}20">${Icons.pieChart(16, colors.accent)}</div>
+                            <h3 class="text-3xl font-bold" style="color: ${colors.textMain}">12k</h3>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-6">
+                        <h4 class="font-bold text-sm mb-3" style="color: ${colors.textMain}">Recent</h4>
+                        <div class="space-y-3">
+                            ${[1,2].map(i => `
+                                <div class="flex justify-between items-center p-3 rounded-xl transition-colors hover:bg-gray-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full" style="background-color: ${i===1 ? colors.accent : colors.secondary}"></div>
+                                        <span class="text-sm font-medium" style="color: ${colors.textMain}">Activity ${i}</span>
+                                    </div>
+                                    <span class="text-xs" style="color: ${colors.textMuted}">2m ago</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            return `<div class="space-y-6 pt-2">${content}</div>`;
+        }
+
+        function renderBottomBar() {
+            const bar = document.getElementById('bottom-bar');
+            bar.style.boxShadow = `0 20px 40px -10px ${colors.textMain}15`;
+            const items = ['Home', 'Search', 'Saved', 'Profile'];
+            bar.innerHTML = items.map((item, idx) => {
+                const isActive = idx === 0;
+                let icon;
+                if(idx===0) icon = Icons.smartphone(24, '#fff');
+                else if(idx===1) icon = Icons.search(24, colors.textMuted);
+                else if(idx===2) icon = Icons.heart(24, colors.textMuted);
+                else icon = Icons.user(24, colors.textMuted);
+
+                return `
+                <div class="group flex flex-col items-center gap-1 cursor-pointer w-12">
+                    <div class="p-2 rounded-xl transition-all duration-300 ${isActive ? '-translate-y-2 shadow-lg' : 'hover:-translate-y-1'}"
+                         style="background-color: ${isActive ? colors.primary : 'transparent'}">
+                       ${icon}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- 7. 工具函数 ---
+        
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (err) {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+        }
+
+        async function copyCSS() {
+            const css = `:root {
+  --primary: ${colors.primary};
+  --secondary: ${colors.secondary};
+  --accent: ${colors.accent};
+  --bg: ${colors.bg};
+  --surface: ${colors.surface};
+  --text-main: ${colors.textMain};
+  --text-muted: ${colors.textMuted};
+  --border: ${colors.border};
+}`;
+            await copyToClipboard(css);
+            const feedback = document.getElementById('copy-feedback');
+            feedback.classList.remove('hidden');
+            setTimeout(() => feedback.classList.add('hidden'), 2000);
+        }
+
+        // 新增：生成并下载适合 Figma 的 SVG 文件
+        function downloadFigmaSVG() {
+            const width = 800;
+            const colorKeys = [
+                { k: 'primary', l: 'Primary' },
+                { k: 'secondary', l: 'Secondary' },
+                { k: 'accent', l: 'Accent' },
+                { k: 'bg', l: 'Background' },
+                { k: 'surface', l: 'Surface' },
+                { k: 'textMain', l: 'Text Main' },
+                { k: 'textMuted', l: 'Text Muted' },
+                { k: 'border', l: 'Border' }
+            ];
+            
+            const cardW = 180;
+            const cardH = 120;
+            const gap = 24;
+            const cols = 4;
+            const rows = Math.ceil(colorKeys.length / cols);
+            const contentHeight = 140 + (rows * (cardH + gap));
+            
+            let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${contentHeight}" viewBox="0 0 ${width} ${contentHeight}" style="background-color: #F3F4F6;">
+                <style>
+                    .label { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+                </style>
+                <!-- Title Block -->
+                <rect width="${width}" height="100" fill="white" />
+                <text x="40" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#111827">${PALETTE_DB[currentIndustry].label}</text>
+                <text x="40" y="75" font-family="Arial, sans-serif" font-size="14" fill="#6B7280">${currentMode === 'light' ? 'Light' : 'Dark'} Mode Palette • Generated by Palette Pro</text>
+                <line x1="0" y1="100" x2="${width}" y2="100" stroke="#E5E7EB" stroke-width="1" />
+            `;
+
+            colorKeys.forEach((item, index) => {
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                const x = 40 + col * (cardW + gap);
+                const y = 140 + row * (cardH + gap);
+                const hex = colors[item.k];
+                
+                // Card Group
+                svgContent += `
+                <g transform="translate(${x}, ${y})">
+                    <!-- Color Swatch -->
+                    <rect x="0" y="0" width="${cardW}" height="${cardH}" rx="12" fill="white" stroke="rgba(0,0,0,0.05)" />
+                    <rect x="6" y="6" width="${cardW - 12}" height="70" rx="8" fill="${hex}" stroke="rgba(0,0,0,0.05)" />
+                    
+                    <!-- Text Info -->
+                    <text x="12" y="96" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151">${item.l}</text>
+                    <text x="12" y="112" font-family="monospace" font-size="11" fill="#9CA3AF">${hex}</text>
+                </g>`;
+            });
+
+            svgContent += `</svg>`;
+
+            const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", url);
+            downloadAnchorNode.setAttribute("download", `${currentIndustry}_${currentMode}_palette.svg`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            document.body.removeChild(downloadAnchorNode);
+        }
+
+        // 启动应用
+        init();
+
+    </script>
+</body>
+</html>
